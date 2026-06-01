@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>TP97 早安分享 · 紧凑版</title>
+    <title>TP97 早安分享 · 最终版</title>
     <style>
         :root {
             --bg: #f9f6f1;
@@ -54,11 +54,10 @@
             background: #fdf8f4;
             padding: 0.25rem 1rem;
             border-radius: 20px;
-            display: inline-block;
+            display: block;
             width: fit-content;
             margin-left: auto;
             margin-right: auto;
-            display: block;
         }
         .row-flex {
             display: flex;
@@ -246,7 +245,7 @@
 <body>
     <div class="admin-link" id="adminEntry">🔑 后台管理</div>
     <div class="container" id="mainContainer">
-        <div class="greeting-line" id="greetingLine">亲爱的TP97家人们，大家早上好！</div>
+        <div class="greeting-line">亲爱的TP97家人们，大家早上好！</div>
         <div class="date-line" id="dateDisplay"></div>
 
         <div class="row-flex">
@@ -285,7 +284,7 @@
             <div class="avatar-circle" id="modalAvatar" style="width:70px;height:70px;margin:0 auto 0.8rem;"></div>
             <h3 id="modalName"></h3>
             <div><strong>电话：</strong><span id="modalPhone"></span></div>
-            <div><strong>生日：</strong><span id="modalBirthday"></span></div>
+            <div><strong>生日：</strong><span id="modalBirthday" style="cursor:pointer; color:#b58252; border-bottom:1px dashed #b58252;"></span></div>
             <div><strong>职位：</strong><span id="modalTitle"></span></div>
             <div><strong>城市：</strong><span id="modalCity"></span></div>
             <div><strong>誓约：</strong><span id="modalPledge"></span></div>
@@ -341,9 +340,33 @@
         </div>
     </div>
 
+    <!-- 编辑成员弹窗（已去除头像字段） -->
+    <div class="modal" id="editMemberModal">
+        <div class="modal-content" style="max-width:500px;">
+            <span class="modal-close" id="closeEditMemberModal">&times;</span>
+            <h3>编辑成员</h3>
+            <input type="text" id="editName" placeholder="姓名">
+            <input type="text" id="editPhone" placeholder="电话">
+            <input type="number" id="editBirthYear" placeholder="出生年份（如1990）">
+            <div style="display:flex; gap:0.5rem;">
+                <input type="text" id="editSolarBirthday" placeholder="阳历生日（如01月15日）" style="flex:1;">
+                <input type="text" id="editLunarBirthday" placeholder="阴历生日（如腊月初八）" style="flex:1;">
+            </div>
+            <select id="editPreferredCalendar">
+                <option value="solar">过阳历生日</option>
+                <option value="lunar">过阴历生日</option>
+            </select>
+            <input type="text" id="editTitle" placeholder="职位">
+            <input type="text" id="editCity" placeholder="城市">
+            <textarea id="editPledge" rows="2" placeholder="个人誓约"></textarea>
+            <textarea id="editPlan" rows="2" placeholder="近期计划"></textarea>
+            <button id="saveEditMemberBtn">保存</button>
+        </div>
+    </div>
+
     <script>
         (function() {
-            // ========== 阴历转换 ==========
+            // ========== 阴历转换（增强版） ==========
             const LunarCalendar = {
                 lunarInfo: [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
                     0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
@@ -405,6 +428,34 @@
                     day = offset + 1;
                     return { year, month, day, isLeap };
                 },
+                solarToLunarText: function(year, month, day) {
+                    const date = new Date(year, month-1, day);
+                    const lunar = this.solar2lunar(date);
+                    const monthStr = (lunar.isLeap ? '闰' : '') + this.lunarMonths[lunar.month-1] + '月';
+                    const dayStr = this.lunarDays[lunar.day-1];
+                    return monthStr + dayStr;
+                },
+                lunarToSolarText: function(year, lunarMonth, lunarDay, isLeap = false) {
+                    const start = new Date(year, 0, 1);
+                    const end = new Date(year, 11, 31);
+                    for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+                        const lunar = this.solar2lunar(new Date(d));
+                        if (lunar.month === lunarMonth && lunar.day === lunarDay && lunar.isLeap === isLeap) {
+                            const m = String(d.getMonth()+1).padStart(2,'0');
+                            const day = String(d.getDate()).padStart(2,'0');
+                            return `${m}月${day}日`;
+                        }
+                    }
+                    for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+                        const lunar = this.solar2lunar(new Date(d));
+                        if (lunar.month === lunarMonth && lunar.day === lunarDay) {
+                            const m = String(d.getMonth()+1).padStart(2,'0');
+                            const day = String(d.getDate()).padStart(2,'0');
+                            return `${m}月${day}日`;
+                        }
+                    }
+                    return null;
+                },
                 getLunarMd: function(date) {
                     const lunar = this.solar2lunar(date);
                     const monthStr = (lunar.isLeap ? '闰' : '') + this.lunarMonths[lunar.month-1] + '月';
@@ -413,24 +464,49 @@
                 }
             };
 
-            // ========== 默认数据 ==========
+            // ========== 成员数据（已按提供信息更新） ==========
             const DEFAULT_MEMBERS = [
-                { name: "张海洋", phone: "13800001111", lunarBirthday: "腊月初八", solarBirthday: "01月15日", preferredCalendar: "solar", avatar: "", title: "队长", city: "杭州", pledge: "我是一个真诚，信任，担当的男人", plan: "本月完成项目路演" },
-                { name: "李思雨", phone: "13800002222", lunarBirthday: "五月初五", solarBirthday: "06月10日", preferredCalendar: "lunar", avatar: "", title: "副队长", city: "上海", pledge: "我是一个勇敢，有爱，坚定的女人", plan: "学习教练技术" },
-                { name: "王浩然", phone: "13800003333", lunarBirthday: "八月十五", solarBirthday: "09月20日", preferredCalendar: "solar", avatar: "", title: "学习委员", city: "北京", pledge: "我是一个感恩，付出，卓越的男人", plan: "坚持每日冥想" },
-                { name: "陈雅婷", phone: "13800004444", lunarBirthday: "正月十五", solarBirthday: "02月28日", preferredCalendar: "lunar", avatar: "", title: "文艺组长", city: "深圳", pledge: "我是一个温暖，智慧，有梦想的女人", plan: "策划团队旅行" },
-                { name: "刘志远", phone: "13800005555", lunarBirthday: "七月初七", solarBirthday: "08月12日", preferredCalendar: "solar", avatar: "", title: "纪律委员", city: "广州", pledge: "我是一个自律，坚韧，信守承诺的男人", plan: "减重5公斤" },
-                { name: "赵晓晓", phone: "13800006666", lunarBirthday: "三月初三", solarBirthday: "04月18日", preferredCalendar: "lunar", avatar: "", title: "财务主管", city: "成都", pledge: "我是一个细心，包容，创造丰盛的女人", plan: "公益基金筹备" },
-                { name: "周明哲", phone: "13800007777", lunarBirthday: "九月九日", solarBirthday: "10月05日", preferredCalendar: "solar", avatar: "", title: "技术顾问", city: "武汉", pledge: "我是一个创新，专注，负责的男人", plan: "完成系统升级" },
-                { name: "吴雨桐", phone: "13800008888", lunarBirthday: "六月六日", solarBirthday: "07月22日", preferredCalendar: "lunar", avatar: "", title: "宣传委员", city: "南京", pledge: "我是一个热情，喜悦，有影响力的女人", plan: "视频号运营" },
-                { name: "郑浩然", phone: "13800009999", lunarBirthday: "二月初二", solarBirthday: "03月12日", preferredCalendar: "solar", avatar: "", title: "后勤部长", city: "西安", pledge: "我是一个踏实，可靠，行动力强的男人", plan: "整理团队物资" },
-                { name: "许梦瑶", phone: "13800001112", lunarBirthday: "四月十八", solarBirthday: "05月20日", preferredCalendar: "lunar", avatar: "", title: "活动策划", city: "重庆", pledge: "我是一个灵动，创造，成就他人的女人", plan: "组织户外拓展" },
-                { name: "何志强", phone: "13800001113", lunarBirthday: "十一月十一", solarBirthday: "12月08日", preferredCalendar: "solar", avatar: "", title: "秘书长", city: "长沙", pledge: "我是一个沉稳，大爱，说到做到的男人", plan: "完善团队手册" },
-                { name: "张教练", phone: "13900000001", lunarBirthday: "正月初一", solarBirthday: "01月01日", preferredCalendar: "solar", avatar: "", title: "教练", city: "杭州", pledge: "我是一个点燃他人，成就卓越的教练", plan: "辅导新学员" },
-                { name: "李教练", phone: "13900000002", lunarBirthday: "六月十五", solarBirthday: "07月20日", preferredCalendar: "lunar", avatar: "", title: "教练", city: "上海", pledge: "我是一个赋能生命，知行合一的教练", plan: "教练技术复训" },
-                { name: "王教练", phone: "13900000003", lunarBirthday: "九月初九", solarBirthday: "10月01日", preferredCalendar: "solar", avatar: "", title: "教练", city: "北京", pledge: "我是一个胸怀大爱，严格要求的教练", plan: "年度公益计划" },
-                { name: "赵教练", phone: "13900000004", lunarBirthday: "腊月二十", solarBirthday: "12月25日", preferredCalendar: "lunar", avatar: "", title: "教练", city: "深圳", pledge: "我是一个陪伴成长，守护信念的教练", plan: "教练团建组织" }
+                { name: "徐听", phone: "13989509955", birthYear: 1976, lunarBirthday: "腊月初二", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "团长", city: "柯桥", pledge: "我是一个激情、担当、包容的男人！", plan: "" },
+                { name: "傅建光", phone: "13160110000", birthYear: 1981, lunarBirthday: "", solarBirthday: "03月30日", preferredCalendar: "solar", avatar: "", title: "", city: "盛泽", pledge: "我是一个激情、乐观、负责任的男人！", plan: "" },
+                { name: "王传珍", phone: "13482833029", birthYear: 1981, lunarBirthday: "十月十三", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "", city: "上海", pledge: "我是一个真诚、温暖、负责任的女人！", plan: "" },
+                { name: "任立志", phone: "13588851757", birthYear: 1983, lunarBirthday: "十月十二", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "", city: "杭州", pledge: "我是一个激情、乐观、担当的男人！", plan: "" },
+                { name: "邹亮", phone: "15015238375", birthYear: 1987, lunarBirthday: "十月初一", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "", city: "上虞", pledge: "我是一个勇敢、激情、担当的男人！", plan: "" },
+                { name: "李波", phone: "13252132595", birthYear: 1988, lunarBirthday: "", solarBirthday: "05月23日", preferredCalendar: "solar", avatar: "", title: "", city: "柯桥", pledge: "我是一个激情、乐观、负责任的男人！", plan: "" },
+                { name: "刘红燕", phone: "15007691821", birthYear: 1991, lunarBirthday: "六月廿五", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "", city: "上海", pledge: "我是一个激情、勇敢、负责任的女人！", plan: "" },
+                { name: "何宇宽", phone: "17826805956", birthYear: 1996, lunarBirthday: "", solarBirthday: "02月21日", preferredCalendar: "solar", avatar: "", title: "", city: "杭州", pledge: "我是一个勇敢、承诺、负责任的男人！", plan: "" },
+                { name: "娄曦文", phone: "13909520357", birthYear: 1997, lunarBirthday: "", solarBirthday: "02月28日", preferredCalendar: "solar", avatar: "", title: "", city: "银川", pledge: "我是一个激情、温暖、乐观的女人！", plan: "" },
+                { name: "李素函", phone: "18710606536", birthYear: 1997, lunarBirthday: "九月廿八", solarBirthday: "", preferredCalendar: "lunar", avatar: "", title: "", city: "上海", pledge: "我是一个激情、信任、负责任的女人！", plan: "" },
+                { name: "全祥", phone: "13587747017", birthYear: 2002, lunarBirthday: "", solarBirthday: "08月25日", preferredCalendar: "solar", avatar: "", title: "", city: "义乌", pledge: "我是一个真诚、信任、担当的男人！", plan: "" },
+                { name: "李燕", phone: "17621121431", birthYear: 1969, lunarBirthday: "", solarBirthday: "03月10日", preferredCalendar: "solar", avatar: "", title: "教练", city: "上海", pledge: "", plan: "" },
+                { name: "杨秀财", phone: "13341637687", birthYear: 1975, lunarBirthday: "", solarBirthday: "05月05日", preferredCalendar: "solar", avatar: "", title: "教练", city: "上海", pledge: "", plan: "" },
+                { name: "黄燕青", phone: "15906699641", birthYear: 1983, lunarBirthday: "", solarBirthday: "07月11日", preferredCalendar: "solar", avatar: "", title: "教练", city: "桐庐", pledge: "", plan: "" },
+                { name: "吴爱娴", phone: "15355983338", birthYear: 1984, lunarBirthday: "", solarBirthday: "05月14日", preferredCalendar: "solar", avatar: "", title: "教练", city: "杭州", pledge: "", plan: "" }
             ];
+
+            // 自动补全缺失的生日
+            function autoCompleteBirthdays(members) {
+                members.forEach(m => {
+                    if (m.birthYear) {
+                        if (m.preferredCalendar === 'solar' && m.solarBirthday && !m.lunarBirthday) {
+                            const [mm, dd] = m.solarBirthday.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                            m.lunarBirthday = LunarCalendar.solarToLunarText(m.birthYear, mm, dd);
+                        } else if (m.preferredCalendar === 'lunar' && m.lunarBirthday && !m.solarBirthday) {
+                            const isLeap = m.lunarBirthday.startsWith('闰');
+                            const monthDay = m.lunarBirthday.replace(/^闰?/, '');
+                            const monthStr = monthDay.replace(/月.*/, '');
+                            const dayStr = monthDay.replace(/.*月/, '');
+                            const monthIndex = LunarCalendar.lunarMonths.indexOf(monthStr) + 1;
+                            const dayIndex = LunarCalendar.lunarDays.indexOf(dayStr) + 1;
+                            if (monthIndex > 0 && dayIndex > 0) {
+                                const solar = LunarCalendar.lunarToSolarText(m.birthYear, monthIndex, dayIndex, isLeap);
+                                if (solar) m.solarBirthday = solar;
+                            }
+                        }
+                    }
+                });
+            }
+            autoCompleteBirthdays(DEFAULT_MEMBERS);
+
             const DEFAULT_QUOTES = [
                 "万物皆为我所用，而非我所属。","且将新火试新茶，诗酒趁年华。","所谓无底深渊，下去，也是前程万里。",
                 "生活不是等待风暴过去，而是学会在雨中翩翩起舞。","山重水复疑无路，柳暗花明又一村。",
@@ -447,10 +523,10 @@
             const ADMIN_PASSWORD = "tp97admin";
 
             function loadData() {
-                let members = localStorage.getItem('tp97_members_v7');
-                let quotes = localStorage.getItem('tp97_quotes_v7');
-                let teamGoal = localStorage.getItem('tp97_teamGoal_v7');
-                let order = localStorage.getItem('tp97_order_v7');
+                let members = localStorage.getItem('tp97_members_final');
+                let quotes = localStorage.getItem('tp97_quotes_final');
+                let teamGoal = localStorage.getItem('tp97_teamGoal_final');
+                let order = localStorage.getItem('tp97_order_final');
                 if (members) members = JSON.parse(members); else members = DEFAULT_MEMBERS;
                 if (quotes) quotes = JSON.parse(quotes); else quotes = DEFAULT_QUOTES;
                 if (teamGoal) teamGoal = teamGoal; else teamGoal = DEFAULT_TEAM_GOAL;
@@ -460,10 +536,10 @@
                 return { members, quotes, teamGoal, order };
             }
             function saveAll() {
-                localStorage.setItem('tp97_members_v7', JSON.stringify(members));
-                localStorage.setItem('tp97_quotes_v7', JSON.stringify(quotes));
-                localStorage.setItem('tp97_teamGoal_v7', teamGoal);
-                localStorage.setItem('tp97_order_v7', JSON.stringify(shareOrder));
+                localStorage.setItem('tp97_members_final', JSON.stringify(members));
+                localStorage.setItem('tp97_quotes_final', JSON.stringify(quotes));
+                localStorage.setItem('tp97_teamGoal_final', teamGoal);
+                localStorage.setItem('tp97_order_final', JSON.stringify(shareOrder));
             }
 
             let { members, quotes, teamGoal, order: shareOrder } = loadData();
@@ -514,6 +590,61 @@
                 return birthdayPeople.map(p => p.name);
             }
 
+            function daysUntilSolarBirthday(solarBirthday) {
+                const today = getTodayStart();
+                const [m, d] = solarBirthday.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                const thisYearBirthday = new Date(today.getFullYear(), m-1, d);
+                if (thisYearBirthday > today) return Math.floor((thisYearBirthday - today) / 86400000);
+                const nextYearBirthday = new Date(today.getFullYear()+1, m-1, d);
+                return Math.floor((nextYearBirthday - today) / 86400000);
+            }
+
+            function daysUntilLunarBirthday(lunarBirthday, birthYear) {
+                const today = getTodayStart();
+                const monthName = lunarBirthday.replace(/^闰?/, '').replace(/月.*/, '');
+                const dayName = lunarBirthday.replace(/.*月/, '');
+                const monthIndex = LunarCalendar.lunarMonths.indexOf(monthName) + 1;
+                const dayIndex = LunarCalendar.lunarDays.indexOf(dayName) + 1;
+                const isLeap = lunarBirthday.startsWith('闰');
+                if (monthIndex <= 0 || dayIndex <= 0) return null;
+                const thisYearSolar = LunarCalendar.lunarToSolarText(today.getFullYear(), monthIndex, dayIndex, isLeap);
+                if (!thisYearSolar) return null;
+                const [m, d] = thisYearSolar.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                const thisYearDate = new Date(today.getFullYear(), m-1, d);
+                if (thisYearDate > today) return Math.floor((thisYearDate - today) / 86400000);
+                const nextYearSolar = LunarCalendar.lunarToSolarText(today.getFullYear()+1, monthIndex, dayIndex, isLeap);
+                if (!nextYearSolar) return null;
+                const [m2, d2] = nextYearSolar.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                const nextYearDate = new Date(today.getFullYear()+1, m2-1, d2);
+                return Math.floor((nextYearDate - today) / 86400000);
+            }
+
+            function getMemberBirthdayText(member) {
+                const yearStr = member.birthYear ? member.birthYear + '年' : '';
+                if (member.preferredCalendar === 'solar') return yearStr + member.solarBirthday;
+                else return yearStr + member.lunarBirthday;
+            }
+
+            function getAge(member) {
+                if (!member.birthYear) return null;
+                const today = getTodayStart();
+                let age = today.getFullYear() - member.birthYear;
+                if (member.preferredCalendar === 'solar') {
+                    const [m, d] = member.solarBirthday.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                    const thisBirthday = new Date(today.getFullYear(), m-1, d);
+                    if (today < thisBirthday) age--;
+                } else {
+                    age--;
+                }
+                return age;
+            }
+
+            function getDaysUntilBirthday(member) {
+                if (member.preferredCalendar === 'solar') return daysUntilSolarBirthday(member.solarBirthday);
+                else return daysUntilLunarBirthday(member.lunarBirthday, member.birthYear);
+            }
+
+            // ========== UI ==========
             const memberGrid = document.getElementById('memberGrid');
             const pledgeText = document.getElementById('pledgeText');
             const dailyQuoteEl = document.getElementById('dailyQuote');
@@ -522,8 +653,7 @@
             let currentMember = members[0] || null;
 
             function updateDateDisplay() {
-                const today = getTodayStart();
-                dateLine.textContent = `今天是 ${formatDate(today)}`;
+                dateLine.textContent = `今天是 ${formatDate(getTodayStart())}`;
             }
 
             function renderMembers() {
@@ -539,14 +669,7 @@
                     const idx = members.indexOf(m);
                     const div = document.createElement('div');
                     div.className = 'member-item' + (m === currentMember ? ' active' : '');
-                    div.innerHTML = `
-                        <div class="avatar-circle" style="${m.avatar ? `background-image:url('${m.avatar}')` : ''}">
-                            ${m.avatar ? '' : m.name.charAt(0)}
-                        </div>
-                        <span class="member-name">${m.name}</span>
-                        ${m === thisSharer ? '<span class="badge">本月</span>' : ''}
-                        ${m === nextSharer ? '<span class="badge next">下月</span>' : ''}
-                    `;
+                    div.innerHTML = `<div class="avatar-circle">${m.name.charAt(0)}</div><span class="member-name">${m.name}</span>${m === thisSharer ? '<span class="badge">本月</span>' : ''}${m === nextSharer ? '<span class="badge next">下月</span>' : ''}`;
                     div.addEventListener('click', () => selectMember(idx));
                     div.addEventListener('dblclick', () => openMemberModal(idx));
                     let timer;
@@ -568,12 +691,7 @@
                         const idx = members.indexOf(m);
                         const div = document.createElement('div');
                         div.className = 'member-item' + (m === currentMember ? ' active' : '');
-                        div.innerHTML = `
-                            <div class="avatar-circle" style="${m.avatar ? `background-image:url('${m.avatar}')` : ''}">
-                                ${m.avatar ? '' : m.name.charAt(0)}
-                            </div>
-                            <span class="member-name">${m.name}</span>
-                        `;
+                        div.innerHTML = `<div class="avatar-circle">${m.name.charAt(0)}</div><span class="member-name">${m.name}</span>`;
                         div.addEventListener('click', () => selectMember(idx));
                         div.addEventListener('dblclick', () => openMemberModal(idx));
                         let timer;
@@ -589,31 +707,20 @@
             function selectMember(index) {
                 currentMember = members[index];
                 pledgeText.textContent = currentMember.pledge;
-                document.querySelectorAll('.member-item').forEach((el, i) => {
-                    const memberData = members[i];
-                    el.classList.toggle('active', memberData === currentMember);
-                });
+                document.querySelectorAll('.member-item').forEach((el, i) => el.classList.toggle('active', members[i] === currentMember));
             }
 
             function getRandomQuote() { return quotes[Math.floor(Math.random() * quotes.length)]; }
             function refreshQuote() {
-                const today = getTodayStart();
-                const birthdays = checkBirthdays(today);
-                if (birthdays.length > 0) {
-                    dailyQuoteEl.textContent = `今天是${birthdays.join('、')}的生日，让我们大家祝TA生日快乐吧！`;
-                } else {
-                    dailyQuoteEl.textContent = getRandomQuote();
-                }
+                const birthdays = checkBirthdays(getTodayStart());
+                dailyQuoteEl.textContent = birthdays.length > 0 ? `今天是${birthdays.join('、')}的生日，让我们大家祝TA生日快乐吧！` : getRandomQuote();
             }
 
             function updateMilestones() {
                 const today = getTodayStart();
                 const tp97 = calcDays(TP97_START, today);
                 const houP = calcDays(HOU_P_START, today);
-                document.getElementById('milestones').innerHTML = `
-                    <div>2024年9月5日，我们第一次见面</div>
-                    <div>2024年9月29日首周结束，TP97第<span style="font-weight:700;color:#b58252;">${tp97}</span> 天</div>
-                    <div>2025年2月24日下山，后P第<span style="font-weight:700;color:#b58252;">${houP}</span> 天</div>`;
+                document.getElementById('milestones').innerHTML = `<div>2024年9月5日，我们第一次见面</div><div>2024年9月29日首周结束，TP97第<span style="font-weight:700;color:#b58252;">${tp97}</span> 天</div><div>2025年2月24日下山，后P第<span style="font-weight:700;color:#b58252;">${houP}</span> 天</div>`;
             }
             function updateTeamGoal() { teamGoalEl.textContent = teamGoal; }
 
@@ -647,11 +754,19 @@
             const memberModal = document.getElementById('memberModal');
             function openMemberModal(idx) {
                 const m = members[idx];
-                document.getElementById('modalAvatar').style.backgroundImage = m.avatar ? `url('${m.avatar}')` : '';
-                document.getElementById('modalAvatar').textContent = m.avatar ? '' : m.name.charAt(0);
+                document.getElementById('modalAvatar').textContent = m.name.charAt(0);
                 document.getElementById('modalName').textContent = m.name;
                 document.getElementById('modalPhone').textContent = m.phone;
-                document.getElementById('modalBirthday').textContent = m.preferredCalendar === 'lunar' ? `阴历 ${m.lunarBirthday}` : `阳历 ${m.solarBirthday}`;
+                const birthdayEl = document.getElementById('modalBirthday');
+                birthdayEl.textContent = getMemberBirthdayText(m);
+                birthdayEl.onclick = () => {
+                    const age = getAge(m);
+                    birthdayEl.textContent = age !== null ? `年龄：${age} 岁` : '未设置出生年份';
+                };
+                birthdayEl.ondblclick = () => {
+                    const days = getDaysUntilBirthday(m);
+                    birthdayEl.textContent = days !== null ? `距离下次生日还有 ${days} 天` : '无法计算天数';
+                };
                 document.getElementById('modalTitle').textContent = m.title;
                 document.getElementById('modalCity').textContent = m.city;
                 document.getElementById('modalPledge').textContent = m.pledge;
@@ -661,6 +776,7 @@
             document.getElementById('closeMemberModal').addEventListener('click', () => memberModal.classList.remove('active'));
             window.addEventListener('click', (e) => { if (e.target === memberModal) memberModal.classList.remove('active'); });
 
+            // 添加句子
             const addQuoteModal = document.getElementById('addQuoteModal');
             document.getElementById('addQuoteBtn').addEventListener('click', () => addQuoteModal.classList.add('active'));
             document.getElementById('closeQuoteModal').addEventListener('click', () => addQuoteModal.classList.remove('active'));
@@ -669,6 +785,7 @@
                 if (txt) { quotes.push(txt); saveAll(); document.getElementById('newQuoteText').value = ''; addQuoteModal.classList.remove('active'); refreshQuote(); }
             });
 
+            // 后台管理
             const adminModal = document.getElementById('adminModal');
             document.getElementById('adminEntry').addEventListener('click', () => adminModal.classList.add('active'));
             document.getElementById('closeAdminModal').addEventListener('click', () => adminModal.classList.remove('active'));
@@ -677,9 +794,7 @@
                     document.getElementById('adminLogin').style.display = 'none';
                     document.getElementById('adminPanel').classList.add('active');
                     renderAdminPanel();
-                } else {
-                    document.getElementById('pwError').style.display = 'block';
-                }
+                } else document.getElementById('pwError').style.display = 'block';
             });
 
             function renderAdminPanel() {
@@ -694,43 +809,94 @@
                 members.forEach((m, idx) => {
                     const div = document.createElement('div');
                     div.className = 'member-edit-item';
-                    div.innerHTML = `<span>${m.name} - ${m.title}</span>
-                        <div><button class="btn-small edit-member-btn" data-idx="${idx}">编辑</button>
-                        <button class="btn-small delete-member-btn" data-idx="${idx}">删除</button></div>`;
+                    div.innerHTML = `<span>${m.name} - ${m.title}</span><div><button class="btn-small edit-member-btn" data-idx="${idx}">编辑</button><button class="btn-small delete-member-btn" data-idx="${idx}">删除</button></div>`;
                     container.appendChild(div);
                 });
-                document.querySelectorAll('.edit-member-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => editMember(parseInt(e.target.dataset.idx)));
-                });
-                document.querySelectorAll('.delete-member-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = parseInt(e.target.dataset.idx);
-                        members.splice(idx, 1);
-                        shareOrder = shareOrder.filter(n => members.some(m => m.name === n));
-                        saveAll();
-                        renderAdminPanel();
-                        renderMembers();
-                        if (currentMember && !members.includes(currentMember)) selectMember(0);
-                    });
-                });
+                document.querySelectorAll('.edit-member-btn').forEach(btn => btn.addEventListener('click', (e) => openEditMemberModal(parseInt(e.target.dataset.idx))));
+                document.querySelectorAll('.delete-member-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    members.splice(idx, 1);
+                    shareOrder = shareOrder.filter(n => members.some(m => m.name === n));
+                    saveAll();
+                    renderAdminPanel();
+                    renderMembers();
+                    if (currentMember && !members.includes(currentMember)) selectMember(0);
+                }));
             }
-            function editMember(idx) {
-                const m = members[idx];
-                const newData = prompt(`编辑成员 ${m.name} (JSON格式)`, JSON.stringify(m, null, 2));
-                if (newData) {
-                    try {
-                        const updated = JSON.parse(newData);
-                        members[idx] = updated;
-                        if (updated.title === '教练') shareOrder = shareOrder.filter(n => n !== updated.name);
-                        saveAll();
-                        renderAdminPanel();
-                        renderMembers();
-                        if (currentMember === m) selectMember(idx);
-                    } catch(e) { alert('JSON格式错误'); }
+
+            const editModal = document.getElementById('editMemberModal');
+            const solarInput = document.getElementById('editSolarBirthday');
+            const lunarInput = document.getElementById('editLunarBirthday');
+            const birthYearInput = document.getElementById('editBirthYear');
+
+            function autoConvertSolarToLunar() {
+                const year = parseInt(birthYearInput.value);
+                const solar = solarInput.value.trim();
+                if (year && solar.match(/^\d{1,2}月\d{1,2}日$/)) {
+                    const [m, d] = solar.match(/(\d{1,2})月(\d{1,2})日/).slice(1).map(Number);
+                    try { lunarInput.value = LunarCalendar.solarToLunarText(year, m, d); } catch (e) {}
                 }
             }
+            function autoConvertLunarToSolar() {
+                const year = parseInt(birthYearInput.value);
+                const lunar = lunarInput.value.trim();
+                if (year && lunar) {
+                    const isLeap = lunar.startsWith('闰');
+                    const monthDay = lunar.replace(/^闰?/, '');
+                    const monthStr = monthDay.replace(/月.*/, '');
+                    const dayStr = monthDay.replace(/.*月/, '');
+                    const monthIndex = LunarCalendar.lunarMonths.indexOf(monthStr) + 1;
+                    const dayIndex = LunarCalendar.lunarDays.indexOf(dayStr) + 1;
+                    if (monthIndex > 0 && dayIndex > 0) {
+                        const solarText = LunarCalendar.lunarToSolarText(year, monthIndex, dayIndex, isLeap);
+                        if (solarText) solarInput.value = solarText;
+                    }
+                }
+            }
+            solarInput.addEventListener('change', autoConvertSolarToLunar);
+            lunarInput.addEventListener('change', autoConvertLunarToSolar);
+
+            function openEditMemberModal(idx) {
+                const m = members[idx];
+                document.getElementById('editName').value = m.name;
+                document.getElementById('editPhone').value = m.phone;
+                document.getElementById('editBirthYear').value = m.birthYear || '';
+                solarInput.value = m.solarBirthday;
+                lunarInput.value = m.lunarBirthday;
+                document.getElementById('editPreferredCalendar').value = m.preferredCalendar;
+                document.getElementById('editTitle').value = m.title;
+                document.getElementById('editCity').value = m.city;
+                document.getElementById('editPledge').value = m.pledge;
+                document.getElementById('editPlan').value = m.plan;
+                editModal.classList.add('active');
+                document.getElementById('saveEditMemberBtn').onclick = () => {
+                    const updated = {
+                        name: document.getElementById('editName').value,
+                        phone: document.getElementById('editPhone').value,
+                        birthYear: parseInt(document.getElementById('editBirthYear').value) || 0,
+                        solarBirthday: solarInput.value,
+                        lunarBirthday: lunarInput.value,
+                        preferredCalendar: document.getElementById('editPreferredCalendar').value,
+                        avatar: '',
+                        title: document.getElementById('editTitle').value,
+                        city: document.getElementById('editCity').value,
+                        pledge: document.getElementById('editPledge').value,
+                        plan: document.getElementById('editPlan').value
+                    };
+                    members[idx] = updated;
+                    if (updated.title === '教练') shareOrder = shareOrder.filter(n => n !== updated.name);
+                    saveAll();
+                    renderAdminPanel();
+                    renderMembers();
+                    if (currentMember === members[idx]) selectMember(idx);
+                    editModal.classList.remove('active');
+                };
+            }
+            document.getElementById('closeEditMemberModal').addEventListener('click', () => editModal.classList.remove('active'));
+            window.addEventListener('click', (e) => { if (e.target === editModal) editModal.classList.remove('active'); });
+
             document.getElementById('addMemberBtn').addEventListener('click', () => {
-                const newMember = { name:"新成员", phone:"", lunarBirthday:"", solarBirthday:"", preferredCalendar:"solar", avatar:"", title:"", city:"", pledge:"我的誓约", plan:"" };
+                const newMember = { name:"新成员", phone:"", birthYear:0, lunarBirthday:"", solarBirthday:"", preferredCalendar:"solar", avatar:"", title:"", city:"", pledge:"", plan:"" };
                 members.push(newMember);
                 saveAll();
                 renderAdminPanel();
@@ -743,35 +909,17 @@
                 shareOrder.forEach((name, idx) => {
                     const div = document.createElement('div');
                     div.className = 'order-item';
-                    div.innerHTML = `<span>${idx+1}. ${name}</span>
-                        <div>
-                            <button class="btn-small up-order" data-idx="${idx}" ${idx===0?'disabled':''}>↑</button>
-                            <button class="btn-small down-order" data-idx="${idx}" ${idx===shareOrder.length-1?'disabled':''}>↓</button>
-                        </div>`;
+                    div.innerHTML = `<span>${idx+1}. ${name}</span><div><button class="btn-small up-order" data-idx="${idx}" ${idx===0?'disabled':''}>↑</button><button class="btn-small down-order" data-idx="${idx}" ${idx===shareOrder.length-1?'disabled':''}>↓</button></div>`;
                     container.appendChild(div);
                 });
-                document.querySelectorAll('.up-order').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = parseInt(e.target.dataset.idx);
-                        if (idx > 0) {
-                            [shareOrder[idx-1], shareOrder[idx]] = [shareOrder[idx], shareOrder[idx-1]];
-                            saveAll();
-                            renderOrderEditList();
-                            renderMembers();
-                        }
-                    });
-                });
-                document.querySelectorAll('.down-order').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = parseInt(e.target.dataset.idx);
-                        if (idx < shareOrder.length-1) {
-                            [shareOrder[idx], shareOrder[idx+1]] = [shareOrder[idx+1], shareOrder[idx]];
-                            saveAll();
-                            renderOrderEditList();
-                            renderMembers();
-                        }
-                    });
-                });
+                document.querySelectorAll('.up-order').forEach(btn => btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    if (idx > 0) { [shareOrder[idx-1], shareOrder[idx]] = [shareOrder[idx], shareOrder[idx-1]]; saveAll(); renderOrderEditList(); renderMembers(); }
+                }));
+                document.querySelectorAll('.down-order').forEach(btn => btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    if (idx < shareOrder.length-1) { [shareOrder[idx], shareOrder[idx+1]] = [shareOrder[idx+1], shareOrder[idx]]; saveAll(); renderOrderEditList(); renderMembers(); }
+                }));
             }
 
             function renderQuoteEditList() {
@@ -783,14 +931,12 @@
                     div.innerHTML = `<span>${q}</span><button class="btn-small delete-quote-btn" data-idx="${idx}">删除</button>`;
                     container.appendChild(div);
                 });
-                document.querySelectorAll('.delete-quote-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        quotes.splice(parseInt(e.target.dataset.idx), 1);
-                        saveAll();
-                        renderQuoteEditList();
-                        refreshQuote();
-                    });
-                });
+                document.querySelectorAll('.delete-quote-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    quotes.splice(parseInt(e.target.dataset.idx), 1);
+                    saveAll();
+                    renderQuoteEditList();
+                    refreshQuote();
+                }));
             }
             document.getElementById('addQuoteAdminBtn').addEventListener('click', () => {
                 const val = document.getElementById('newQuoteInput').value.trim();
@@ -818,16 +964,9 @@
             }
             init();
             document.getElementById('refreshQuoteBtn').addEventListener('click', () => {
-                const today = getTodayStart();
-                const birthdays = checkBirthdays(today);
-                if (birthdays.length === 0) dailyQuoteEl.textContent = getRandomQuote();
+                if (checkBirthdays(getTodayStart()).length === 0) dailyQuoteEl.textContent = getRandomQuote();
             });
-            setInterval(() => {
-                updateDateDisplay();
-                updateMilestones();
-                refreshQuote();
-                renderMembers();
-            }, 60000);
+            setInterval(() => { updateDateDisplay(); updateMilestones(); refreshQuote(); renderMembers(); }, 60000);
         })();
     </script>
 </body>
