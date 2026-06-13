@@ -189,19 +189,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 0.8rem;
             margin-top: 0.4rem;
-            flex-wrap: wrap;
         }
         .btn-copy {
             background: var(--btn); border: none; color: white; font-size: 0.95rem;
             padding: 0.5rem 1.2rem; border-radius: 40px; cursor: pointer; letter-spacing: 1px;
             box-shadow: 0 6px 14px -6px rgba(180,130,70,0.35); font-family: inherit;
-        }
-        .btn-add-quote {
-            background: none; border: 1px dashed var(--accent); color: var(--accent);
-            padding: 0.4rem 1rem; border-radius: 20px; cursor: pointer; font-family: inherit;
-            font-size: 0.8rem;
         }
         .copy-feedback { text-align: center; margin-top: 0.3rem; font-size: 0.75rem; color: #7d5d3c; height: 1rem; }
         .team-goal {
@@ -282,7 +275,6 @@
         </div>
         <div class="btn-row">
             <button class="btn-copy" id="copyButton">📋 一键复制早安分享</button>
-            <button class="btn-add-quote" id="addQuoteBtn">✨ 添加一句好句子</button>
         </div>
         <div class="copy-feedback" id="copyFeedback"></div>
         <div class="team-goal">
@@ -305,15 +297,6 @@
             <div><strong>城市：</strong><span id="modalCity"></span></div>
             <div><strong>誓约：</strong><span id="modalPledge"></span></div>
             <div><strong>近期计划：</strong><span id="modalPlan"></span></div>
-        </div>
-    </div>
-
-    <div class="modal" id="addQuoteModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeQuoteModal">&times;</span>
-            <h3>添加金句</h3>
-            <textarea id="newQuoteText" rows="3" placeholder="输入一句好句子..."></textarea>
-            <button id="saveQuoteBtn">保存到句子库</button>
         </div>
     </div>
 
@@ -762,14 +745,6 @@
             document.getElementById('closeMemberModal').addEventListener('click', () => memberModal.classList.remove('active'));
             window.addEventListener('click', (e) => { if (e.target === memberModal) memberModal.classList.remove('active'); });
 
-            const addQuoteModal = document.getElementById('addQuoteModal');
-            document.getElementById('addQuoteBtn').addEventListener('click', () => addQuoteModal.classList.add('active'));
-            document.getElementById('closeQuoteModal').addEventListener('click', () => addQuoteModal.classList.remove('active'));
-            document.getElementById('saveQuoteBtn').addEventListener('click', () => {
-                const txt = document.getElementById('newQuoteText').value.trim();
-                if (txt) { quotes.push(txt); saveAll(); document.getElementById('newQuoteText').value = ''; addQuoteModal.classList.remove('active'); refreshQuote(); }
-            });
-
             // 后台管理
             const adminModal = document.getElementById('adminModal');
             document.getElementById('adminEntry').addEventListener('click', () => adminModal.classList.add('active'));
@@ -987,7 +962,6 @@
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('pwError').style.display = 'none';
                 document.getElementById('memberModal').classList.remove('active');
-                document.getElementById('addQuoteModal').classList.remove('active');
                 document.getElementById('editMemberModal').classList.remove('active');
 
                 updateDateDisplay();
