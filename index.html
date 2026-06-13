@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>TP97 早安分享 · 最终版</title>
-    <style>body { margin: 0; }</style><style>
+    <style>
         :root {
             --bg: #f9f6f1;
             --card: #ffffff;
@@ -258,10 +259,10 @@
     <div class="admin-link" id="adminEntry">🔑 后台管理</div>
     <div class="container" id="mainContainer">
         <div class="greeting-line">亲爱的TP97家人们，大家早上好！</div>
-        <div class="date-line" id="dateDisplay">今天是 2026年06月13日，四月廿八，星期六</div>
+        <div class="date-line" id="dateDisplay"></div>
 
         <div class="row-flex">
-            <div class="milestones" id="milestones"><div>2024年9月5日，我们第一次见面</div><div>2024年9月29日首周结束，TP97第<span style="font-weight:700;color:#b58252;">623</span> 天</div><div>2025年2月24日下山，后P第<span style="font-weight:700;color:#b58252;">475</span> 天</div></div>
+            <div class="milestones" id="milestones"></div>
             <div class="principles">
                 <p><span class="num">1.</span> 我们的立场书：我／我们承诺创造！一个激情、团结、负责任的环境!️</p>
                 <p><span class="num">2.</span> 我们的队呼：TP97踏浪出击</p>
@@ -270,11 +271,11 @@
 
         <div class="member-selection">
             <div class="label">👥 今日分享人（点击头像切换誓约）</div>
-            <div class="member-grid" id="memberGrid"><div class="non-coach-scroll"><div class="member-item active"><div class="avatar-circle">徐</div><span class="member-name">徐听</span></div><div class="member-item"><div class="avatar-circle">傅</div><span class="member-name">傅建光</span></div><div class="member-item"><div class="avatar-circle">王</div><span class="member-name">王传珍</span></div><div class="member-item"><div class="avatar-circle">任</div><span class="member-name">任立志</span><span class="badge next">下月</span></div><div class="member-item"><div class="avatar-circle">邹</div><span class="member-name">邹亮</span></div><div class="member-item"><div class="avatar-circle">李</div><span class="member-name">李波</span></div><div class="member-item"><div class="avatar-circle">刘</div><span class="member-name">刘红燕</span></div><div class="member-item"><div class="avatar-circle">何</div><span class="member-name">何宇宽</span></div><div class="member-item"><div class="avatar-circle">娄</div><span class="member-name">娄曦文</span></div><div class="member-item"><div class="avatar-circle">李</div><span class="member-name">李素函</span></div><div class="member-item"><div class="avatar-circle">全</div><span class="member-name">全祥</span><span class="badge">本月</span></div></div><div class="coach-separator">👨‍🏫 教练团队</div><div class="coach-row"><div class="member-item"><div class="avatar-circle">李</div><span class="member-name">李燕</span></div><div class="member-item"><div class="avatar-circle">杨</div><span class="member-name">杨秀财</span></div><div class="member-item"><div class="avatar-circle">黄</div><span class="member-name">黄燕青</span></div><div class="member-item"><div class="avatar-circle">吴</div><span class="member-name">吴爱娴</span></div></div></div>
+            <div class="member-grid" id="memberGrid"></div>
         </div>
-        <div class="pledge-box"><span id="pledgeText">我是一个激情、担当、包容的男人！</span></div>
+        <div class="pledge-box"><span id="pledgeText">请选择成员</span></div>
         <div class="daily-quote-box">
-            <span class="quote-content" id="dailyQuote">种一棵树最好的时间是十年前，其次是现在。</span>
+            <span class="quote-content" id="dailyQuote"></span>
             <button class="btn-refresh-quote" id="refreshQuoteBtn">🔄 换一句</button>
         </div>
         <div class="btn-row">
@@ -284,15 +285,15 @@
         <div class="copy-feedback" id="copyFeedback"></div>
         <div class="team-goal">
             <h4>🎯 TP97 团队目标</h4>
-            <p id="teamGoalText">2026年：全员业绩翻倍，举办两次大型公益活动，团队凝聚力再上新台阶。</p>
+            <p id="teamGoalText"></p>
         </div>
         <div class="footer-note">🌿 每日自动更新 · 双击头像查看详情</div>
     </div>
 
-    <!-- 弹窗结构同上，略作精简，完整保留在脚本中 -->
+    <!-- 弹窗结构 -->
     <div class="modal" id="memberModal">
         <div class="modal-content">
-            <span class="modal-close" id="closeMemberModal">×</span>
+            <span class="modal-close" id="closeMemberModal">&times;</span>
             <div class="avatar-circle" id="modalAvatar" style="width:70px;height:70px;margin:0 auto 0.8rem;"></div>
             <h3 id="modalName"></h3>
             <div><strong>电话：</strong><span id="modalPhone"></span></div>
@@ -306,40 +307,40 @@
 
     <div class="modal" id="addQuoteModal">
         <div class="modal-content">
-            <span class="modal-close" id="closeQuoteModal">×</span>
+            <span class="modal-close" id="closeQuoteModal">&times;</span>
             <h3>添加金句</h3>
             <textarea id="newQuoteText" rows="3" placeholder="输入一句好句子..."></textarea>
             <button id="saveQuoteBtn">保存到句子库</button>
         </div>
     </div>
 
-    <div class="modal active" id="adminModal">
+    <div class="modal" id="adminModal">
         <div class="modal-content" style="max-width:600px;">
-            <span class="modal-close" id="closeAdminModal">×</span>
+            <span class="modal-close" id="closeAdminModal">&times;</span>
             <h3>后台管理</h3>
-            <div id="adminLogin" style="display: none;">
+            <div id="adminLogin">
                 <input type="password" id="adminPassword" placeholder="请输入管理密码">
                 <button id="loginBtn">进入管理</button>
                 <p style="color:red;display:none;" id="pwError">密码错误</p>
             </div>
-            <div class="admin-panel active" id="adminPanel">
+            <div class="admin-panel" id="adminPanel">
                 <div style="margin-bottom:0.8rem;">
                     <strong>团队目标：</strong>
                     <textarea id="editTeamGoal" rows="2"></textarea>
                 </div>
                 <div>
                     <strong>成员列表：</strong>
-                    <div id="memberEditList"><div class="member-edit-item"><span>徐听 - 团长</span><div><button class="btn-small edit-member-btn" data-idx="0">编辑</button><button class="btn-small delete-member-btn" data-idx="0">删除</button></div></div><div class="member-edit-item"><span>傅建光 - </span><div><button class="btn-small edit-member-btn" data-idx="1">编辑</button><button class="btn-small delete-member-btn" data-idx="1">删除</button></div></div><div class="member-edit-item"><span>王传珍 - </span><div><button class="btn-small edit-member-btn" data-idx="2">编辑</button><button class="btn-small delete-member-btn" data-idx="2">删除</button></div></div><div class="member-edit-item"><span>任立志 - </span><div><button class="btn-small edit-member-btn" data-idx="3">编辑</button><button class="btn-small delete-member-btn" data-idx="3">删除</button></div></div><div class="member-edit-item"><span>邹亮 - </span><div><button class="btn-small edit-member-btn" data-idx="4">编辑</button><button class="btn-small delete-member-btn" data-idx="4">删除</button></div></div><div class="member-edit-item"><span>李波 - </span><div><button class="btn-small edit-member-btn" data-idx="5">编辑</button><button class="btn-small delete-member-btn" data-idx="5">删除</button></div></div><div class="member-edit-item"><span>刘红燕 - </span><div><button class="btn-small edit-member-btn" data-idx="6">编辑</button><button class="btn-small delete-member-btn" data-idx="6">删除</button></div></div><div class="member-edit-item"><span>何宇宽 - </span><div><button class="btn-small edit-member-btn" data-idx="7">编辑</button><button class="btn-small delete-member-btn" data-idx="7">删除</button></div></div><div class="member-edit-item"><span>娄曦文 - </span><div><button class="btn-small edit-member-btn" data-idx="8">编辑</button><button class="btn-small delete-member-btn" data-idx="8">删除</button></div></div><div class="member-edit-item"><span>李素函 - </span><div><button class="btn-small edit-member-btn" data-idx="9">编辑</button><button class="btn-small delete-member-btn" data-idx="9">删除</button></div></div><div class="member-edit-item"><span>全祥 - </span><div><button class="btn-small edit-member-btn" data-idx="10">编辑</button><button class="btn-small delete-member-btn" data-idx="10">删除</button></div></div><div class="member-edit-item"><span>李燕 - 教练</span><div><button class="btn-small edit-member-btn" data-idx="11">编辑</button><button class="btn-small delete-member-btn" data-idx="11">删除</button></div></div><div class="member-edit-item"><span>杨秀财 - 教练</span><div><button class="btn-small edit-member-btn" data-idx="12">编辑</button><button class="btn-small delete-member-btn" data-idx="12">删除</button></div></div><div class="member-edit-item"><span>黄燕青 - 教练</span><div><button class="btn-small edit-member-btn" data-idx="13">编辑</button><button class="btn-small delete-member-btn" data-idx="13">删除</button></div></div><div class="member-edit-item"><span>吴爱娴 - 教练</span><div><button class="btn-small edit-member-btn" data-idx="14">编辑</button><button class="btn-small delete-member-btn" data-idx="14">删除</button></div></div></div>
+                    <div id="memberEditList"></div>
                     <button id="addMemberBtn">+ 添加成员</button>
                 </div>
                 <div style="margin-top:0.8rem;">
                     <strong>分享顺序（仅非教练成员）：</strong>
-                    <div id="orderEditList"><div class="order-item"><span>1. 任立志</span><div><button class="btn-small up-order" data-idx="0" disabled="">↑</button><button class="btn-small down-order" data-idx="0">↓</button></div></div><div class="order-item"><span>2. 王传珍</span><div><button class="btn-small up-order" data-idx="1">↑</button><button class="btn-small down-order" data-idx="1">↓</button></div></div><div class="order-item"><span>3. 徐听</span><div><button class="btn-small up-order" data-idx="2">↑</button><button class="btn-small down-order" data-idx="2">↓</button></div></div><div class="order-item"><span>4. 傅建光</span><div><button class="btn-small up-order" data-idx="3">↑</button><button class="btn-small down-order" data-idx="3">↓</button></div></div><div class="order-item"><span>5. 邹亮</span><div><button class="btn-small up-order" data-idx="4">↑</button><button class="btn-small down-order" data-idx="4">↓</button></div></div><div class="order-item"><span>6. 李波</span><div><button class="btn-small up-order" data-idx="5">↑</button><button class="btn-small down-order" data-idx="5">↓</button></div></div><div class="order-item"><span>7. 刘红燕</span><div><button class="btn-small up-order" data-idx="6">↑</button><button class="btn-small down-order" data-idx="6">↓</button></div></div><div class="order-item"><span>8. 何宇宽</span><div><button class="btn-small up-order" data-idx="7">↑</button><button class="btn-small down-order" data-idx="7">↓</button></div></div><div class="order-item"><span>9. 娄曦文</span><div><button class="btn-small up-order" data-idx="8">↑</button><button class="btn-small down-order" data-idx="8">↓</button></div></div><div class="order-item"><span>10. 李素函</span><div><button class="btn-small up-order" data-idx="9">↑</button><button class="btn-small down-order" data-idx="9">↓</button></div></div><div class="order-item"><span>11. 全祥</span><div><button class="btn-small up-order" data-idx="10">↑</button><button class="btn-small down-order" data-idx="10" disabled="">↓</button></div></div></div>
+                    <div id="orderEditList"></div>
                     <small>点击上下箭头调整顺序</small>
                 </div>
                 <div style="margin-top:0.8rem;">
                     <strong>句子库：</strong>
-                    <div id="quoteEditList" style="max-height:120px;overflow-y:auto;"><div class="quote-list-item"><span>万物皆为我所用，而非我所属。</span><button class="btn-small delete-quote-btn" data-idx="0">删除</button></div><div class="quote-list-item"><span>且将新火试新茶，诗酒趁年华。</span><button class="btn-small delete-quote-btn" data-idx="1">删除</button></div><div class="quote-list-item"><span>所谓无底深渊，下去，也是前程万里。</span><button class="btn-small delete-quote-btn" data-idx="2">删除</button></div><div class="quote-list-item"><span>生活不是等待风暴过去，而是学会在雨中翩翩起舞。</span><button class="btn-small delete-quote-btn" data-idx="3">删除</button></div><div class="quote-list-item"><span>山重水复疑无路，柳暗花明又一村。</span><button class="btn-small delete-quote-btn" data-idx="4">删除</button></div><div class="quote-list-item"><span>心之所向，素履以往。</span><button class="btn-small delete-quote-btn" data-idx="5">删除</button></div><div class="quote-list-item"><span>你生来应为高山，而非草芥。</span><button class="btn-small delete-quote-btn" data-idx="6">删除</button></div><div class="quote-list-item"><span>长风破浪会有时，直挂云帆济沧海。</span><button class="btn-small delete-quote-btn" data-idx="7">删除</button></div><div class="quote-list-item"><span>种一棵树最好的时间是十年前，其次是现在。</span><button class="btn-small delete-quote-btn" data-idx="8">删除</button></div><div class="quote-list-item"><span>不乱于心，不困于情，不畏将来，不念过往。</span><button class="btn-small delete-quote-btn" data-idx="9">删除</button></div><div class="quote-list-item"><span>真正的英雄主义，是看清生活真相后依然热爱生活。</span><button class="btn-small delete-quote-btn" data-idx="10">删除</button></div><div class="quote-list-item"><span>人生如逆旅，我亦是行人。</span><button class="btn-small delete-quote-btn" data-idx="11">删除</button></div><div class="quote-list-item"><span>每一天都是一个新的开始。</span><button class="btn-small delete-quote-btn" data-idx="12">删除</button></div><div class="quote-list-item"><span>你若爱，生活哪里都可爱。</span><button class="btn-small delete-quote-btn" data-idx="13">删除</button></div><div class="quote-list-item"><span>世界以痛吻我，要我报之以歌。</span><button class="btn-small delete-quote-btn" data-idx="14">删除</button></div><div class="quote-list-item"><span>莫愁千里路，自有到来风。</span><button class="btn-small delete-quote-btn" data-idx="15">删除</button></div><div class="quote-list-item"><span>保持热爱，奔赴山海。</span><button class="btn-small delete-quote-btn" data-idx="16">删除</button></div><div class="quote-list-item"><span>勇敢的人先享受世界。</span><button class="btn-small delete-quote-btn" data-idx="17">删除</button></div><div class="quote-list-item"><span>追风赶月莫停留，平芜尽处是春山。</span><button class="btn-small delete-quote-btn" data-idx="18">删除</button></div><div class="quote-list-item"><span>当下即是全部。</span><button class="btn-small delete-quote-btn" data-idx="19">删除</button></div><div class="quote-list-item"><span>行到水穷处，坐看云起时。</span><button class="btn-small delete-quote-btn" data-idx="20">删除</button></div><div class="quote-list-item"><span>总有人间一两风，填我十万八千梦。</span><button class="btn-small delete-quote-btn" data-idx="21">删除</button></div><div class="quote-list-item"><span>人生没有白走的路，每一步都算数。</span><button class="btn-small delete-quote-btn" data-idx="22">删除</button></div><div class="quote-list-item"><span>知不足而奋进，望远山而前行。</span><button class="btn-small delete-quote-btn" data-idx="23">删除</button></div><div class="quote-list-item"><span>万物皆有裂痕，那是光照进来的地方。</span><button class="btn-small delete-quote-btn" data-idx="24">删除</button></div></div>
+                    <div id="quoteEditList" style="max-height:120px;overflow-y:auto;"></div>
                     <input type="text" id="newQuoteInput" placeholder="添加新句子">
                     <button id="addQuoteAdminBtn">添加</button>
                 </div>
@@ -353,7 +354,7 @@
 
     <div class="modal" id="editMemberModal">
         <div class="modal-content" style="max-width:500px;">
-            <span class="modal-close" id="closeEditMemberModal">×</span>
+            <span class="modal-close" id="closeEditMemberModal">&times;</span>
             <h3>编辑成员</h3>
             <input type="text" id="editName" placeholder="姓名">
             <input type="text" id="editPhone" placeholder="电话">
@@ -514,10 +515,10 @@
             autoCompleteBirthdays(DEFAULT_MEMBERS);
 
             function loadData() {
-                let members = localStorage.getItem('tp97_members_export_1781327110788');
-                let quotes = localStorage.getItem('tp97_quotes_export_1781327110788');
-                let teamGoal = localStorage.getItem('tp97_teamGoal_export_1781327110788');
-                let order = localStorage.getItem('tp97_order_export_1781327110788');
+                let members = localStorage.getItem('tp97_members_final');
+                let quotes = localStorage.getItem('tp97_quotes_final');
+                let teamGoal = localStorage.getItem('tp97_teamGoal_final');
+                let order = localStorage.getItem('tp97_order_final');
                 if (members) members = JSON.parse(members); else members = DEFAULT_MEMBERS;
                 if (quotes) quotes = JSON.parse(quotes); else quotes = DEFAULT_QUOTES;
                 if (teamGoal) teamGoal = teamGoal; else teamGoal = DEFAULT_TEAM_GOAL;
@@ -527,10 +528,10 @@
                 return { members, quotes, teamGoal, order };
             }
             function saveAll() {
-                localStorage.setItem('tp97_members_export_1781327110788', JSON.stringify(members));
-                localStorage.setItem('tp97_quotes_export_1781327110788', JSON.stringify(quotes));
-                localStorage.setItem('tp97_teamGoal_export_1781327110788', teamGoal);
-                localStorage.setItem('tp97_order_export_1781327110788', JSON.stringify(shareOrder));
+                localStorage.setItem('tp97_members_final', JSON.stringify(members));
+                localStorage.setItem('tp97_quotes_final', JSON.stringify(quotes));
+                localStorage.setItem('tp97_teamGoal_final', teamGoal);
+                localStorage.setItem('tp97_order_final', JSON.stringify(shareOrder));
             }
 
             let { members, quotes, teamGoal, order: shareOrder } = loadData();
@@ -934,23 +935,20 @@
                 alert('所有更改已保存！');
             });
 
-            // 导出配置功能
+            // 导出配置功能（文件名直接设为 index.html）
             document.getElementById('exportConfigBtn').addEventListener('click', () => {
-                // 确保当前数据已保存
                 saveAll();
-                // 构建新的 HTML 文件内容：用当前页面的 outerHTML，但需要修改 localStorage 的键名，避免冲突
                 const newHtml = document.documentElement.outerHTML;
-                // 替换存储键名，确保新文件不会读取旧 localStorage
                 const updatedHtml = newHtml
-                    .replace(/tp97_members_export_1781327110788/g, 'tp97_members_export_' + Date.now())
-                    .replace(/tp97_quotes_export_1781327110788/g, 'tp97_quotes_export_' + Date.now())
-                    .replace(/tp97_teamGoal_export_1781327110788/g, 'tp97_teamGoal_export_' + Date.now())
-                    .replace(/tp97_order_export_1781327110788/g, 'tp97_order_export_' + Date.now());
+                    .replace(/tp97_members_final/g, 'tp97_members_export_' + Date.now())
+                    .replace(/tp97_quotes_final/g, 'tp97_quotes_export_' + Date.now())
+                    .replace(/tp97_teamGoal_final/g, 'tp97_teamGoal_export_' + Date.now())
+                    .replace(/tp97_order_final/g, 'tp97_order_export_' + Date.now());
                 const blob = new Blob(['<!DOCTYPE html>\n' + updatedHtml], { type: 'text/html' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'TP97早安分享_配置备份.html';
+                a.download = 'index.html';
                 a.click();
                 URL.revokeObjectURL(url);
                 alert('配置已导出！下载的文件可直接替换 GitHub 仓库里的 index.html');
@@ -972,5 +970,5 @@
             setInterval(() => { updateDateDisplay(); updateMilestones(); refreshQuote(); renderMembers(); }, 60000);
         })();
     </script>
-
-</body></html>
+</body>
+</html>
