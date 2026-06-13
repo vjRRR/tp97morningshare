@@ -770,13 +770,23 @@
             // 后台管理
             const adminModal = document.getElementById('adminModal');
             document.getElementById('adminEntry').addEventListener('click', () => adminModal.classList.add('active'));
-            document.getElementById('closeAdminModal').addEventListener('click', () => adminModal.classList.remove('active'));
+            document.getElementById('closeAdminModal').addEventListener('click', () => {
+                adminModal.classList.remove('active');
+                // 重置后台登录状态
+                document.getElementById('adminLogin').style.display = 'block';
+                document.getElementById('adminPanel').classList.remove('active');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('pwError').style.display = 'none';
+            });
             document.getElementById('loginBtn').addEventListener('click', () => {
                 if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
                     document.getElementById('adminLogin').style.display = 'none';
                     document.getElementById('adminPanel').classList.add('active');
+                    document.getElementById('pwError').style.display = 'none';
                     renderAdminPanel();
-                } else document.getElementById('pwError').style.display = 'block';
+                } else {
+                    document.getElementById('pwError').style.display = 'block';
+                }
             });
 
             function renderAdminPanel() {
@@ -935,7 +945,7 @@
                 alert('所有更改已保存！');
             });
 
-            // 导出配置功能（文件名直接设为 index.html）
+            // 导出配置（文件名 index.html）
             document.getElementById('exportConfigBtn').addEventListener('click', () => {
                 saveAll();
                 const newHtml = document.documentElement.outerHTML;
@@ -955,6 +965,16 @@
             });
 
             function init() {
+                // 强制关闭所有弹窗，确保刷新后回到前台
+                document.getElementById('adminModal').classList.remove('active');
+                document.getElementById('adminLogin').style.display = 'block';
+                document.getElementById('adminPanel').classList.remove('active');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('pwError').style.display = 'none';
+                document.getElementById('memberModal').classList.remove('active');
+                document.getElementById('addQuoteModal').classList.remove('active');
+                document.getElementById('editMemberModal').classList.remove('active');
+
                 updateDateDisplay();
                 updateMilestones();
                 updateTeamGoal();
